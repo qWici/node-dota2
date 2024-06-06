@@ -4,12 +4,12 @@
  */
 
 /**
- * A Long class for representing a 64 bit two's-complement integer value 
+ * A Long class for representing a 64 bit two's-complement integer value
  * derived from the Closure Library for stand-alone use and extended with unsigned support.
  * @external Long
  * @see {@link https://www.npmjs.com/package/long|long} npm package
  */
- 
+
 /**
  * The Steam for Node JS package, allowing interaction with Steam.
  * @external steam
@@ -19,7 +19,7 @@
 const util = require("util");
 const Long = require("long");
 const steam = require("steam");
-const steam_resources = require("steam-resources");
+const steam_resources = require("steam-resources-v2");
 const { createLogger, format, transports } = require('winston');
 const { EventEmitter } = require('events');
 
@@ -33,12 +33,12 @@ var Dota2 = exports;
  * Object types can be created by `new Dota2.schema.<TypeName>(payload :Object);`.
  * Enum types can be referenced by `Dota2.schema.<EnumName>`, which returns an object array representing the enum.
  * @alias module:Dota2.schema
- */ 
+ */
 Dota2.schema = steam_resources.GC.Dota.Internal;
 
 /**
  * The Dota 2 client that communicates with the GC
- * @class 
+ * @class
  * @alias module:Dota2.Dota2Client
  * @param {Object} steamClient - Node-steam client instance
  * @param {boolean} debug - Print debug information to console
@@ -93,9 +93,9 @@ Dota2.Dota2Client = function Dota2Client(steamClient, debug, debugMore) {
     EventEmitter.call(this);
     this.debug = debug || false;
     this.debugMore = debugMore || false;
-    
+
     /**
-     * The logger used to write debug messages. This is a WinstonJS logger, 
+     * The logger used to write debug messages. This is a WinstonJS logger,
      * feel free to configure it as you like
      * @type {winston.Logger}
      */
@@ -113,20 +113,20 @@ Dota2.Dota2Client = function Dota2Client(steamClient, debug, debugMore) {
     });
     if(debug) this.Logger.level = "debug";
     if(debugMore) this.Logger.level = "silly";
-    
-    /** The current state of the bot's inventory. Contains cosmetics, player cards, ... 
-     * @type {CSOEconItem[]} 
+
+    /** The current state of the bot's inventory. Contains cosmetics, player cards, ...
+     * @type {CSOEconItem[]}
      */
     this.Inventory = [];
-    /** The chat channels the bot has joined 
+    /** The chat channels the bot has joined
      * @type {CMsgDOTAJoinChatChannelResponse[]}
      */
     this.chatChannels = []; // Map channel names to channel data.
-    /** The lobby the bot is currently in. Falsy if the bot isn't in a lobby. 
+    /** The lobby the bot is currently in. Falsy if the bot isn't in a lobby.
      * @type {CSODOTALobby}
      */
     this.Lobby = null;
-    /** The currently active lobby invitation. Falsy if the bot has not been invited. 
+    /** The currently active lobby invitation. Falsy if the bot has not been invited.
      * @type {CSODOTALobbyInvite}
      */
     this.LobbyInvite = null;
@@ -144,7 +144,7 @@ Dota2.Dota2Client = function Dota2Client(steamClient, debug, debugMore) {
     this._client = steamClient;
     this._gc = new steam.SteamGameCoordinator(steamClient, DOTA_APP_ID);
     this._appid = DOTA_APP_ID;
-    
+
     this._gcReady = false;
     this._gcClientHelloIntervalId = null;
     this._gcConnectionStatus = Dota2.schema.GCConnectionStatus.GCConnectionStatus_NO_SESSION;
@@ -189,9 +189,9 @@ Dota2.Dota2Client = function Dota2Client(steamClient, debug, debugMore) {
             self._gcClientHelloCount = 0;
             self.emit("hellotimeout");
         }
-        
+
         self.Logger.debug("Sending ClientHello");
-        
+
         if (!self._gc) {
             self.Logger.error("Where the fuck is _gc?");
         } else {
@@ -232,7 +232,7 @@ Dota2.Dota2Client.prototype.ToSteamID = function(accid) {
 Dota2.Dota2Client.prototype.launch = function() {
     /* Reports to Steam that we are running Dota 2. Initiates communication with GC with EMsgGCClientHello */
     this.Logger.debug("Launching Dota 2");
-    
+
     this.AccountID = this.ToAccountID(this._client.steamID);
     this.Party = null;
     this.Lobby = null;
@@ -287,7 +287,7 @@ Dota2.Dota2Client.prototype.sendToGC = function(type, payload, handler, callback
 
 // Events
 /**
- * Emitted when the connection with the GC has been established 
+ * Emitted when the connection with the GC has been established
  * and the client is ready to take requests.
  * @event module:Dota2.Dota2Client#ready
  */
@@ -326,7 +326,7 @@ handlers[Dota2.schema.EGCBaseClientMsg.k_EMsgGCClientWelcome] = function clientW
 handlers[Dota2.schema.EGCBaseClientMsg.k_EMsgGCClientConnectionStatus] = function gcClientConnectionStatus(message) {
     /* Catch and handle changes in connection status, cuz reasons u know. */
     var status = Dota2.schema.CMsgConnectionStatus.decode(message).status;
-    
+
     if (status) this._gcConnectionStatus = status;
 
     switch (status) {
@@ -345,7 +345,7 @@ handlers[Dota2.schema.EGCBaseClientMsg.k_EMsgGCClientConnectionStatus] = functio
 
         default:
             this.Logger.debug(Object.keys(Dota2.schema.GCConnectionStatus).find(key => Dota2.schema.GCConnectionStatus[key] === status));
-            
+
             this.Logger.debug("GC Connection Status unreliable - " + status);
 
             // Only execute if !_gcClientHelloIntervalID, otherwise it's already been handled (and we don't want to emit multiple 'unready');
